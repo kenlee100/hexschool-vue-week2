@@ -227,6 +227,7 @@
             products: [],
             // 初始商品資料
             temp: {
+              id: "-NKkeH37BBIGdwvRoSX-",
               title: "測試的產品",
               description: "測試的描述",
               content: "測試的說明",
@@ -234,6 +235,7 @@
               unit: "單位",
               origin_price: 1000,
               price: 500,
+              num: 1,
               imageUrl:
                 "https://images.unsplash.com/photo-1516550135131-fe3dcb0bedc7?ixlib=rb-0.3.5&ixid=eyJhcHBfaWQiOjEyMDd9&s=621e8231a4e714c2e85f5acbbcc6a730&auto=format&fit=crop&w=1352&q=80",
               imagesUrl: [
@@ -274,7 +276,7 @@
           // 取得商品資料
           getProduct() {
             axios
-              .get(`${this.url}/api/${this.path}/admin/products`)
+              .get(`${this.url}/api/${this.path}/admin/products/all`)
               .then((res) => {
                 this.products = res.data.products;
               })
