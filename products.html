@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>產品列表</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-eOJMYsd53ii+scO/bJGFsiCZc+5NDVN2yr8+0RDqr0Ql0h+rP48ckxlpbzKgwra6"
+      crossorigin="anonymous"
+    />
+    <link rel="stylesheet" href="./css/style.css" />
+  </head>
+
+  <body>
+    <div id="app">
+      <div class="container">
+        <header>
+          <button
+            type="button"
+            class="btn btn-outline-secondary"
+            @click="logout"
+          >
+            登出
+          </button>
+        </header>
+        <div class="row py-3">
+          <div class="col-md-6">
+            <h2>產品列表</h2>
+            <table class="table table-hover mt-4">
+              <thead>
+                <tr>
+                  <th width="150">產品名稱</th>
+                  <th width="120">原價</th>
+                  <th width="120">售價</th>
+                  <th width="150">是否啟用</th>
+                  <th width="120">查看細節</th>
+                  <td width="120"></td>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="item in products" :key="item.id">
+                  <td width="150">{{item.title }}</td>
+                  <td width="120">{{item.origin_price }}</td>
+                  <td width="120">{{ item.price}}</td>
+                  <td width="150">
+                    <div class="form-check">
+                      <input
+                        class="form-check-input"
+                        type="checkbox"
+                        :id="item.id"
+                        v-model="item.is_enabled"
+                        :true-value="1"
+                        :false-value="0"
+                      />
+                      <label class="form-check-label" :for="item.id">
+                        <span class="text-success" v-if="item.is_enabled"
+                          >啟用</span
+                        >
+                        <span class="text-danger" v-else>未啟用</span>
+                      </label>
+                    </div>
+                  </td>
+                  <td width="120">
+                    <button
+                      type="button"
+                      class="btn btn-primary"
+                      @click="temp = item;"
+                    >
+                      查看細節
+                    </button>
+                  </td>
+                  <td width="100">
+                    <button
+                      type="button"
+                      class="btn btn-danger"
+                      :data-id="item.id"
+                      @click="deleteItem(item.id)"
+                    >
+                      刪除
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <p>目前有 <span>{{ products.length }}</span> 項產品</p>
+          </div>
+          <div class="col-md-6">
+            <h2>單一產品細節</h2>
+            <template v-if="temp.id">
+              <div class="card mb-3 text-start">
+                <img
+                  :src="temp.imageUrl"
+                  class="card-img-top primary-image"
+                  alt="主圖"
+                />
+                <div class="card-body">
+                  <h5 class="card-title">
+                    {{ temp.title }}
+                    <span class="badge bg-primary ms-2"
+                      >{{ temp.category }}</span
+                    >
+                  </h5>
+                  <p class="card-text">商品描述：{{ temp.description }}</p>
+                  <p class="card-text">商品內容：{{ temp.content}}</p>
+                  <div class="d-flex">
+                    <p class="card-text me-2">{{ temp.price }}</p>
+                    <p class="card-text text-secondary">
+                      <del>{{ temp.origin_price }}</del>
+                    </p>
+                    元 / {{ temp.unit}}
+                  </div>
+                  <div class="d-flex">
+                    <span class="text-success" v-if="temp.is_enabled"
+                      >啟用</span
+                    >
+                    <span class="text-danger" v-else>未啟用</span>
+                  </div>
+                  <form>
+                    <div class="border rounded p-3 mb-3">
+                      <div class="mb-3">
+                        <label class="form-label">主圖</label>
+                        <div class="form-group text-center">
+                          <img
+                            :src="temp.imageUrl"
+                            class="img-fluid mb-3"
+                            alt="主圖"
+                            width="250"
+                          />
+                        </div>
+                        <div class="input-group">
+                          <input
+                            type="file"
+                            class="form-control"
+                            name="main-file-upload"
+                            @change="uploadFile('main-file')"
+                            ref="main-file"
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <label for="image">輸入主圖網址</label>
+                        <input
+                          type="text"
+                          class="form-control mb-2"
+                          v-model="temp.imageUrl"
+                          placeholder="輸入主圖連結"
+                        />
+                      </div>
+                    </div>
+                    <div
+                      class="border rounded p-3 mb-3"
+                      v-for="(item,index) in temp.imagesUrl"
+                      :key="index"
+                    >
+                      <div class="mb-3">
+                        <label class="form-label">圖片 {{ index+1 }}</label>
+                        <div class="form-group text-center">
+                          <img
+                            :src="item"
+                            class="img-fluid mb-3"
+                            alt="圖"
+                            width="250"
+                          />
+                        </div>
+                        <div class="input-group">
+                          <input
+                            type="file"
+                            class="form-control"
+                            :name="`file-upload-${index+1}`"
+                            @change="uploadFile(`ref-file-${index+1}`)"
+                            :ref="`ref-file-${index+1}`"
+                            :data-num="index"
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <label for="image">輸入圖片網址{{ index+1 }}</label>
+                        <input
+                          type="text"
+                          class="form-control mb-2"
+                          v-model="temp.imageUrl"
+                          placeholder="輸入主圖連結"
+                        />
+                      </div>
+                    </div>
+                  </form>
+                  <button class="btn btn-secondary" @click="updateProductData">
+                    更新
+                  </button>
+                </div>
+              </div>
+              <template v-for="item in temp.imagesUrl" :key="item">
+                <img :src="item" alt="" class="images m-2" />
+              </template>
+            </template>
+            <p v-else class="text-secondary">請選擇一個商品查看</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.9.1/axios.min.js"
+      integrity="sha512-Xk3wWei2TGrsh9kDSBKUMIjw/86sLUvhtnv9f7fOuIwhhiUTKz8szkWkzHthrM5Bb3Bu9idSzkxOrkzhcneuiw=="
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.1/dist/umd/popper.min.js"
+      integrity="sha384-SR1sx49pcuLnqZUnnPwx6FCym0wLsk5JZuNx2bPPENzswTNFaQU1RDvt3wT4gWFG"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/js/bootstrap.min.js"
+      integrity="sha384-j0CNLUeiqtyaRmlzUHCPZ+Gy5fQu0dQ6eZ/xAww941Ai1SxSY+0EQqNXNE6DZiVc"
+      crossorigin="anonymous"
+    ></script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script type="module">
+      import config from "./js/config.js";
+      Vue.createApp({
+        data() {
+          return {
+            ...config,
+            products: [],
+            // 初始商品資料
+            temp: {
+              title: "測試的產品",
+              description: "測試的描述",
+              content: "測試的說明",
+              category: "測試分類",
+              unit: "單位",
+              origin_price: 1000,
+              price: 500,
+              imageUrl:
+                "https://images.unsplash.com/photo-1516550135131-fe3dcb0bedc7?ixlib=rb-0.3.5&ixid=eyJhcHBfaWQiOjEyMDd9&s=621e8231a4e714c2e85f5acbbcc6a730&auto=format&fit=crop&w=1352&q=80",
+              imagesUrl: [
+                "https://images.unsplash.com/photo-1516627145497-ae6968895b74?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=1924&q=80",
+                "https://images.unsplash.com/photo-1587300003388-59208cc962cb?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80",
+                "https://images.unsplash.com/photo-1517331156700-3c241d2b4d83?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=1948&q=80",
+                "https://images.unsplash.com/photo-1617093727343-374698b1b08d?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80",
+                "https://images.unsplash.com/photo-1511914265872-c40672604a80?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=1867&q=80",
+              ],
+              is_enabled: 1,
+            },
+          };
+        },
+        methods: {
+          // 檢查是否登入
+          checkLogin() {
+            const token = document.cookie.replace(
+              // userToken 剛剛定義的Token名稱
+              /(?:(?:^|.*;\s*)userToken\s*\=\s*([^;]*).*$)|^.*$/,
+              "$1"
+            );
+            axios.defaults.headers.common["Authorization"] = token;
+            axios
+              .post(`${this.url}/api/user/check`)
+              .then((res) => {
+                // 顯示成功資訊
+                console.log(res);
+              })
+              .catch((err) => {
+                // 顯示失敗資訊
+                console.dir(err.response.data.message);
+              });
+          },
+          // 取得商品資料
+          getProduct() {
+            axios
+              .get(`${this.url}/api/${this.path}/admin/products`)
+              .then((res) => {
+                this.products = res.data.products;
+              })
+              .catch((err) => {
+                // 顯示失敗資訊
+                console.dir(err);
+              });
+          },
+          // 刪除一個商品
+          deleteItem(id) {
+            axios
+              .delete(`${this.url}/api/${this.path}/admin/product/${id}`)
+              .then((res) => {
+                // 顯示成功資訊
+                // console.log(res);
+                this.getProduct();
+              })
+              .catch((err) => {
+                // 顯示失敗資訊
+                console.dir(err);
+              });
+          },
+          uploadFile(refItem) {
+            const formData = new FormData();
+            // 上傳主要圖片
+            if (refItem === "main-file") {
+              const refFiles = this.$refs[refItem];
+              formData.append(refFiles.name, refFiles.files[0]);
+              axios
+                .post(`${this.url}/api/${this.path}/admin/upload`, formData)
+                .then((res) => {
+                  // 顯示成功資訊
+                  console.log(res);
+                  this.temp.imageUrl = res.data.imageUrl;
+                })
+                .catch((err) => {
+                  console.dir(err);
+                });
+            } else {
+              // 上傳其他圖片
+              const refFiles = this.$refs[refItem][0];
+              const i = parseInt(refFiles.dataset.num);
+              console.log(this.temp.imagesUrl[i]);
+              formData.append(refFiles.name, refFiles.files[0]);
+              axios
+                .post(`${this.url}/api/${this.path}/admin/upload`, formData)
+                .then((res) => {
+                  console.log(res);
+                  this.temp.imagesUrl[i] = res.data.imageUrl;
+                })
+                .catch((err) => {
+                  console.dir(err);
+                });
+            }
+          },
+          logout() {
+            axios
+              .post(`${this.url}/logout`)
+              .then((res) => {
+                console.log(res);
+                document.cookie = 'userToken="";';
+                window.location.href = "login.html";
+              })
+              .catch((err) => {
+                console.log(err);
+              });
+          },
+          updateProductData() {
+            axios
+              .put(
+                `${this.url}/api/${this.path}/admin/product/${this.temp.id}`,
+                {
+                  data: {
+                    ...this.temp, // 要有原本的資料，否則會出錯
+                  },
+                }
+              )
+              .then((res) => {
+                // 顯示成功資訊
+                console.log(res);
+                this.getProduct();
+              })
+              .catch((err) => {
+                // 顯示失敗資訊
+                console.dir(err);
+              });
+          },
+        },
+        mounted() {
+          this.checkLogin();
+          this.getProduct();
+        },
+      }).mount("#app");
+    </script>
+  </body>
+</html>
