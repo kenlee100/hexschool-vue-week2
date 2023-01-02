@@ -250,6 +250,10 @@
         methods: {
           // 檢查是否登入
           checkLogin() {
+            // 如果沒有登入進入 products，就轉到登入
+            if (document.cookie === 'userToken=""') {
+              window.location.href = "login.html";
+            }
             const token = document.cookie.replace(
               // userToken 剛剛定義的Token名稱
               /(?:(?:^|.*;\s*)userToken\s*\=\s*([^;]*).*$)|^.*$/,
