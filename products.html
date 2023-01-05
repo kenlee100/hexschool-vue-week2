@@ -226,55 +226,26 @@
             ...config,
             products: [],
             // 初始商品資料
-            temp: {
-              id: "-NKkeH37BBIGdwvRoSX-",
-              title: "測試的產品",
-              description: "測試的描述",
-              content: "測試的說明",
-              category: "測試分類",
-              unit: "單位",
-              origin_price: 1000,
-              price: 500,
-              num: 1,
-              imageUrl:
-                "https://images.unsplash.com/photo-1516550135131-fe3dcb0bedc7?ixlib=rb-0.3.5&ixid=eyJhcHBfaWQiOjEyMDd9&s=621e8231a4e714c2e85f5acbbcc6a730&auto=format&fit=crop&w=1352&q=80",
-              imagesUrl: [
-                "https://images.unsplash.com/photo-1516627145497-ae6968895b74?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=1924&q=80",
-                "https://images.unsplash.com/photo-1587300003388-59208cc962cb?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80",
-                "https://images.unsplash.com/photo-1517331156700-3c241d2b4d83?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=1948&q=80",
-                "https://images.unsplash.com/photo-1617093727343-374698b1b08d?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80",
-                "https://images.unsplash.com/photo-1511914265872-c40672604a80?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=1867&q=80",
-              ],
-              is_enabled: 1,
-            },
+            temp: {},
           };
         },
         methods: {
           // 檢查是否登入
           checkLogin() {
-            // 如果沒有登入進入 products，就轉到登入
-            if (document.cookie === 'userToken=""') {
-              window.location.href = "login.html";
-            }
-            const token = document.cookie.replace(
-              // userToken 剛剛定義的Token名稱
-              /(?:(?:^|.*;\s*)userToken\s*\=\s*([^;]*).*$)|^.*$/,
-              "$1"
-            );
-            axios.defaults.headers.common["Authorization"] = token;
             axios
               .post(`${this.url}/api/user/check`)
               .then((res) => {
-                // 顯示成功資訊
-                console.log(res);
+                this.getProductAll();
               })
               .catch((err) => {
                 // 顯示失敗資訊
-                console.dir(err.response.data.message);
+                alert(err.data.message);
+                // 驗證失敗轉到登入
+                window.location.href = "login.html";
               });
           },
           // 取得商品資料
-          getProduct() {
+          getProductAll() {
             axios
               .get(`${this.url}/api/${this.path}/admin/products/all`)
               .then((res) => {
@@ -282,7 +253,7 @@
               })
               .catch((err) => {
                 // 顯示失敗資訊
-                console.dir(err);
+                alert(err.data.message);
               });
           },
           // 刪除一個商品
@@ -291,12 +262,11 @@
               .delete(`${this.url}/api/${this.path}/admin/product/${id}`)
               .then((res) => {
                 // 顯示成功資訊
-                // console.log(res);
-                this.getProduct();
+                this.getProductAll();
               })
               .catch((err) => {
                 // 顯示失敗資訊
-                console.dir(err);
+                alert(err.data.message);
               });
           },
           uploadFile(refItem) {
@@ -306,42 +276,38 @@
               const refFiles = this.$refs[refItem];
               formData.append(refFiles.name, refFiles.files[0]);
               axios
-                .post(`${this.url}/api/${this.path}/admin/upload`, formData)
+                .post(`${this.url}/api/${this.path}/admin/upload/`, formData)
                 .then((res) => {
-                  // 顯示成功資訊
-                  console.log(res);
                   this.temp.imageUrl = res.data.imageUrl;
                 })
                 .catch((err) => {
-                  console.dir(err);
+                  alert(err.data.message);
                 });
             } else {
               // 上傳其他圖片
               const refFiles = this.$refs[refItem][0];
               const i = parseInt(refFiles.dataset.num);
-              console.log(this.temp.imagesUrl[i]);
               formData.append(refFiles.name, refFiles.files[0]);
               axios
-                .post(`${this.url}/api/${this.path}/admin/upload`, formData)
+                .post(`${this.url}/api/${this.path}/admin/upload/`, formData)
                 .then((res) => {
-                  console.log(res);
                   this.temp.imagesUrl[i] = res.data.imageUrl;
                 })
                 .catch((err) => {
-                  console.dir(err);
+                  alert(err.data.message);
                 });
             }
           },
           logout() {
             axios
-              .post(`${this.url}/logout`)
+              .post(`${this.url}/logout/`)
               .then((res) => {
-                console.log(res);
+                alert(res.data.message);
                 document.cookie = 'userToken="";';
                 window.location.href = "login.html";
               })
               .catch((err) => {
-                console.log(err);
+                alert(err.data.message);
               });
           },
           updateProductData() {
@@ -356,18 +322,24 @@
               )
               .then((res) => {
                 // 顯示成功資訊
-                console.log(res);
-                this.getProduct();
+                alert(res.data.message);
+                this.getProductAll();
               })
               .catch((err) => {
                 // 顯示失敗資訊
-                console.dir(err);
+                alert(err.data.message);
               });
           },
         },
         mounted() {
+          // 取出 Token
+          const token = document.cookie.replace(
+            // userToken 剛剛定義的Token名稱
+            /(?:(?:^|.*;\s*)userToken\s*\=\s*([^;]*).*$)|^.*$/,
+            "$1"
+          );
+          axios.defaults.headers.common["Authorization"] = token;
           this.checkLogin();
-          this.getProduct();
         },
       }).mount("#app");
     </script>
